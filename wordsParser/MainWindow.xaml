@@ -1,0 +1,147 @@
+﻿<Window x:Class="wordsParser.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:wordsParser"
+        mc:Ignorable="d"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+        TextElement.FontWeight="Regular"
+        TextElement.FontSize="13"
+        TextOptions.TextFormattingMode="Ideal"
+        TextOptions.TextRenderingMode="Auto"
+        Background="{DynamicResource MaterialDesignPaper}"
+        FontFamily="{DynamicResource MaterialDesignFont}"
+        Title="Web Words Parser" Height="800" Width="900" WindowStartupLocation="CenterScreen">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="0.2*"></RowDefinition>
+            <RowDefinition></RowDefinition>
+            <RowDefinition></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="0.2*"></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition Width="0.5*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <Label 
+            Grid.Column="0" 
+            Grid.Row="0" 
+            Style="{StaticResource MaterialDesignLabel}"
+            FontSize="24px"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            >
+            URL
+        </Label>
+        <TextBox
+            Grid.Row="0"
+            Grid.Column="1"
+            Grid.ColumnSpan="2"
+            Style="{StaticResource MaterialDesignTextBox}"
+            BorderBrush="AliceBlue"
+            Height="40"
+            FontSize="24px"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Center"
+            Width="auto" Padding="0"
+            Name="userUrl"
+            >
+            https://
+        </TextBox>
+        <Button 
+            Grid.Row="0" 
+            Grid.Column="3" 
+            Width="100px" 
+            Height="50px"
+            FontSize="24px"
+            Style="{StaticResource MaterialDesignRaisedDarkButton}"
+            Name="goBtn"
+            >
+            GO
+        </Button>
+        <materialDesign:Card 
+            Grid.Row="1"
+            Grid.Column="0"
+            Grid.ColumnSpan="4"
+            Padding="32" 
+            Margin="16"
+            VerticalAlignment="Stretch"
+            >
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="0.15*"/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <TextBlock 
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Center"
+                    Style="{DynamicResource MaterialDesignTitleTextBlock}"
+                    >
+                    Полученная страница
+                </TextBlock>
+                <TextBox
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    VerticalScrollBarVisibility="Visible"
+                    IsReadOnly="True"
+                    Name="viewResult"
+                    TextWrapping="Wrap"
+                    AcceptsReturn="True"
+                    >
+
+                </TextBox>
+            </Grid>
+        </materialDesign:Card>
+        <materialDesign:Card 
+            Grid.Row="2"
+            Grid.Column="0"
+            Grid.ColumnSpan="4"
+            Padding="32" 
+            Margin="16"
+            VerticalAlignment="Stretch"
+            >
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="0.15*"/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="0.045*"/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <materialDesign:PackIcon 
+                        Kind="FeatureSearchOutline" 
+                        Width="35"
+                        Height="35"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Center"
+                        />
+                    <TextBlock 
+                        Grid.Column="1"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Center"
+                    Style="{DynamicResource MaterialDesignTitleTextBlock}"
+                    >
+                     Перечень слов
+                    </TextBlock>
+                </Grid>
+
+            </Grid>
+        </materialDesign:Card>
+    </Grid>
+</Window>
