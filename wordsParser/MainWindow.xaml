@@ -49,7 +49,7 @@
             Width="auto" Padding="0"
             Name="userUrl"
             >
-            https://ru.stackoverflow.com/questions/384939/textbox-%D0%B2-%D0%B4%D1%80%D1%83%D0%B3%D0%BE%D0%BC-%D0%BF%D0%BE%D1%82%D0%BE%D0%BA%D0%B5-%D1%87%D0%B5%D0%BC-%D1%81%D0%B0%D0%BC%D0%B0-%D0%BF%D1%80%D0%BE%D0%B3%D1%80%D0%B0%D0%BC%D0%BC%D0%B0
+            https://kr.itstep.org/programmirovanie/?gclid=Cj0KCQiA2o_fBRC8ARIsAIOyQ-kwGwOKRZzgApele9qFwkoB2STBD6gXnDEMcf1dG9blPDNNckMCPBgaAqCUEALw_wcB
         </TextBox>
         <Button 
             Grid.Row="0" 
@@ -90,7 +90,7 @@
                     Grid.Column="0"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
-                    VerticalScrollBarVisibility="Visible"
+                    VerticalScrollBarVisibility="Auto"
                     IsReadOnly="True"
                     Name="viewResult"
                     TextWrapping="Wrap"
@@ -140,7 +140,16 @@
                      Перечень слов
                     </TextBlock>
                 </Grid>
+                <ListView
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    Name="viewWords"
+                    >
 
+                </ListView>
+                
             </Grid>
         </materialDesign:Card>
     </Grid>

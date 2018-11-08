@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -29,9 +30,12 @@ namespace wordsParser
         SynchronizationContext context; //Контекст синхронизации потока
         string url;
 
-        delegate void NewLine(TextBox tb, string line);
+        List<Word> wd;
 
-        NewLine anrl;
+        const string tags = @"(<.*?>)|(<img.*?>)|<img.*>|(&ndash;)|(&copy;)|(&nbsp;)|(&bull;)|<!--.*-->|(&quot;)|(&gt;)";
+        const string script = @"<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>";
+        const string style = @"<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>";
+        const string path = @"<path\b[^<]*(?:<[^<]*)*\/>";
 
         public MainWindow()
         {
@@ -47,6 +51,24 @@ namespace wordsParser
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             context = SynchronizationContext.Current;
+
+            wd = new List<Word>();
+
+            // Add columns
+            var gridView = new GridView();
+            viewWords.View = gridView;
+            gridView.Columns.Add(new GridViewColumn
+            {
+                Header = "Слова",
+                DisplayMemberBinding = new Binding("WD"),
+                Width = 200
+                
+            });
+            gridView.Columns.Add(new GridViewColumn
+            {
+                Header = "Количество повторений",
+                DisplayMemberBinding = new Binding("Quantity")
+            });
 
             goBtn.Click += GoBtn_Click;
         }
@@ -66,64 +88,161 @@ namespace wordsParser
 
             url = userUrl.Text;
            
+            if (wd.Count > 0)
+            {
+                wd.Clear();
+                viewWords.Items.Clear();
+            }
 
             Thread mainWorkingThread = new Thread(SendRequest);
             mainWorkingThread.Start(context);
-
         }
 
+        /// <summary>
+        /// Отправка запроса
+        /// </summary>
+        /// <param name="param"></param>
         private void SendRequest(object param)
         {
+            SynchronizationContext _context = param as SynchronizationContext;
             try
             {
-                SynchronizationContext _context = param as SynchronizationContext;
-
-                _context.Send(ClearViewResult, null);
+                _context.Post(_ => viewResult.Clear(), null);
+                //
                 //Создаем объект запроса
-                //WebRequest request = WebRequest.Create(userUrl.Text);
-                _context.Send(AddNewLine, ">>> Создаем объект запроса...");
+                _context.Post(AddNewLine, ">>> Создаем объект запроса ...");
                 request = WebRequest.Create(url);
+                request.Timeout = 10000;
+
+                SynchronizationContext c = SynchronizationContext.Current;
 
                 //Получаем ответ от сервера
-                _context.Send(AddNewLine, ">>> Получаем ответ от сервера...");
+                _context.Post(AddNewLine, ">>> Получаем ответ от сервера ...");
                 response = request.GetResponse();
 
-                if (response != null)
+                if  (response != null)
                 {
-                    _context.Send(ReadingRequest, _context);
+                    _context.Post(AddNewLine, ">>> Обработка данных ...");
+                    _context.Post(ReadingRequest, _context);
                 }
+                
             }
             catch (Exception ex)
             {
+                _context.Post(AddNewLine, ex.Message);
+                Thread.Sleep(5000);
                 ShowErrorMessage(ex.Message);
             }
         }
 
+        /// <summary>
+        /// Чтение ответа
+        /// </summary>
+        /// <param name="obj"></param>
         private void ReadingRequest(object obj)
         {
             SynchronizationContext _context = obj as SynchronizationContext;
-           
-            using (StreamReader reader = new StreamReader(response.GetResponseStream()))
+            try
             {
-                _context.Send(ClearViewResult, null);
-
-                string line;
-                while ((line = reader.ReadLine()) != null)
+                using (StreamReader reader = new StreamReader(response.GetResponseStream()))
                 {
-                    _context.Send(AddNewLine, line);
+                    _context.Post(ClearViewResult, null);
+
+                    string line;
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        _context.Post(AddNewLine, line);
+                    }
                 }
+
+                _context.Post( GetWordFromText, _context);
+            }
+            catch (Exception ex)
+            {
+                _context.Post(AddNewLine, ex.Message);
+                Thread.Sleep(5000);
+            }
+            
+        }
+
+        private void GetWordFromText(object obj)
+        {
+            SynchronizationContext _context = obj as SynchronizationContext;
+
+            string pageText = viewResult.Text;
+            pageText = Regex.Replace(pageText, script, " ");
+            pageText = Regex.Replace(pageText, style, " ");
+            pageText = Regex.Replace(pageText, tags, " ");
+            pageText = Regex.Replace(pageText, path, " ");
+            pageText = Regex.Replace(pageText, @"{.*}", " ");
+            SplitWords(pageText);
+            ShowWords();
+        }
+
+        /// <summary>
+        /// Show words with quantity
+        /// </summary>
+        private void ShowWords()
+        {
+            foreach (var item in wd)
+            {
+                viewWords.Items.Add(item);
             }
         }
 
-        //private void AddNewLine (TextBox tb ,string line)
-        //{
-        //    tb.AppendText(line + Environment.NewLine);
-        //}
+        /// <summary>
+        /// Spliting word
+        /// </summary>
+        /// <param name="text"></param>
+        private void SplitWords(string text)
+        {
+            //array of symbols for split text
+            char[] chrs = {
+                ',', ':', '.', ';', ' ', '\n', '\r', '\t', '!', '%', '^', '*', '-', '_', '=', '?',
+                '<', '>', '/', '\\', '|', '[', ']', '{', '}', '\'', '(', ')', '"'
+            };
+
+            string[] words = text.Split(chrs);
+
+            foreach (string item in words)
+            {
+                if (item != "" && item != " ")
+                {
+                    Word w = wd.FirstOrDefault(_item => _item.WD.ToUpper() == item.ToUpper());
+
+                    if (w == null)
+                    {
+                        wd.Add(new Word(item));
+                    }
+                    else
+                    {
+                        w.Quantity++;
+                    }
+                }
+            }
+
+            wd = wd.OrderByDescending(q => q.Quantity).ToList();
+        }
+
+        /// <summary>
+        /// Add new line to the result field
+        /// </summary>
+        /// <param name="line"></param>
         private void AddNewLine (object line)
         {
             string str = line as string;
             viewResult.AppendText(line + Environment.NewLine);
         }
+
+        ///// <summary>
+        ///// Add new line to the field with words
+        ///// </summary>
+        ///// <param name="line"></param>
+        //private void AddResLine(object line)
+        //{
+        //    string str = line as string;
+        //    viewWords.AppendText(line + Environment.NewLine);
+        //}
 
         private void ClearViewResult(object obj) { viewResult.Clear(); }
 
